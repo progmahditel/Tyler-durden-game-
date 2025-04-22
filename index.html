@@ -1,0 +1,203 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <!--codedby:@progmahdi-->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tyler durden pazzel - @progmahdi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #000000;
+      --panel-color: #0f0f0f;
+      --accent-color: #e94560;
+      --shadow-color: rgba(0, 0, 0, 0.8);
+      --tile-gap: 4px;
+      --animation-speed: 0.1s;
+      --puzzle-img: url('https://i.ibb.co/DgHJ2Br2/IMG-20250422-162139-843.jpg');
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: var(--bg-color);
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      width: 100%; min-height: 100vh;
+    }
+    body {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-start;
+      padding: 20px; gap: 20px;
+      overflow-y: auto;
+    }
+    #title {
+      font-size: 3rem;
+      color: var(--accent-color);
+      text-shadow: 0 0 8px var(--accent-color), 0 0 16px var(--accent-color), 0 0 24px var(--accent-color);
+      text-align: center;
+      user-select: none;
+    }
+    #subtitle {
+      font-size: 1.5rem;
+      color: var(--accent-color);
+      text-shadow: 0 0 6px var(--accent-color), 0 0 12px var(--accent-color), 0 0 18px var(--accent-color);
+      text-align: center;
+      animation: neonBlink 1s infinite alternate;
+      user-select: none;
+    }
+    @keyframes neonBlink {
+      from { opacity: 1; text-shadow: 0 0 6px var(--accent-color), 0 0 12px var(--accent-color), 0 0 18px var(--accent-color); }
+      to   { opacity: 0.6; text-shadow: 0 0 2px var(--accent-color), 0 0 6px var(--accent-color), 0 0 10px var(--accent-color); }
+    }
+    #puzzle-container {
+      display: grid;
+      grid-template: repeat(4, 1fr) / repeat(4, 1fr);
+      gap: var(--tile-gap);
+      width: 100%; max-width: 500px;
+      aspect-ratio: 1;
+      background: var(--panel-color);
+      border-radius: 16px;
+      box-shadow: 0 0 20px var(--accent-color), 0 10px 30px var(--shadow-color);
+      overflow: hidden;
+    }
+    @media (max-width: 600px) {
+      #puzzle-container { max-width: 90vw; }
+    }
+    .tile {
+      background-image: var(--puzzle-img);
+      background-size: 400% 400%;
+      transition: box-shadow var(--animation-speed), transform var(--animation-speed);
+      cursor: grab; user-select: none;
+    }
+    .tile:hover:not(.blank) {
+      box-shadow: 0 4px 12px rgba(255,255,255,0.2);
+      transform: scale(1.03);
+    }
+    .tile.selected {
+      box-shadow: 0 0 6px 4px rgba(255, 0, 0, 0.7);
+    }
+    .tile.blank { background: transparent; cursor: default; }
+    button {
+      padding: 14px 28px;
+      font-size: 18px; font-weight: 600;
+      color: #fff;
+      background: linear-gradient(45deg, #e94560, #533483);
+      border: none; border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(233,69,96,0.6);
+      cursor: pointer; overflow: hidden;
+      transition: transform 0.2s;
+    }
+    button:hover { transform: scale(1.05) rotate(-1deg); }
+    #footer {
+      font-size: 0.9rem;
+      color: #888;
+      user-select: none;
+    }
+    #footer a { color: var(--accent-color); text-decoration: none; }
+    #footer a:hover { text-decoration: underline; }
+    #guide {
+      font-size: 0.9rem; color: #ccc;
+      text-align: center; max-width: 500px;
+      line-height: 1.4; user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="title">Project Mayhem</h1>
+  <h2 id="subtitle">We are Tyler Durden</h2>
+  <div id="puzzle-container"></div>
+  <button id="shuffle">Shuffle</button>
+  <div id="footer">
+    Coded by <a href="https://t.me/progmahdi" target="_blank">@progmahdi</a>
+  </div>
+  <div id="guide">
+    <strong>How to Play:</strong><br>
+    Drag any tile into the empty space in a straight line (horizontal or vertical).<br>
+    All tiles between will slide together. Use the "Shuffle" button to randomize.<br>
+    Solve the puzzle to reveal the full image. Good luck!
+  </div>
+  <script>
+    const size = 4;
+    let board = Array.from({ length: size * size }, (_, i) => i);
+    const BLANK_VALUE = size * size - 1;
+    let blank = BLANK_VALUE;
+    const container = document.getElementById('puzzle-container');
+    const shuffleBtn = document.getElementById('shuffle');function isSolvable(arr) {
+  let inv = 0;
+  for (let i = 0; i < arr.length; i++) {
+    for (let j = i + 1; j < arr.length; j++) {
+      if (arr[i] > arr[j] && arr[j] !== BLANK_VALUE) inv++;
+    }
+  }
+  if (size % 2 === 0) {
+    const blankRow = Math.floor(arr.indexOf(BLANK_VALUE) / size) + 1;
+    inv += blankRow;
+  }
+  return inv % 2 === 0;
+}
+
+function shuffle() {
+  do {
+    for (let i = board.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [board[i], board[j]] = [board[j], board[i]];
+    }
+  } while (!isSolvable(board) || board.every((v, i) => v === i));
+  blank = board.indexOf(BLANK_VALUE);
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function render() {
+  container.innerHTML = '';
+  board.forEach((tile, idx) => {
+    const div = document.createElement('div');
+    div.className = 'tile' + (tile === BLANK_VALUE ? ' blank' : '');
+    if (tile !== BLANK_VALUE) {
+      div.setAttribute('draggable', 'true');
+      const x = (tile % size) * (100 / (size - 1));
+      const y = Math.floor(tile / size) * (100 / (size - 1));
+      div.style.backgroundPosition = `-${x}% -${y}%`;
+    }
+    div.dataset.index = idx;
+    container.append(div);
+  });
+}
+
+function lineMove(from, to) {
+  const fr = Math.floor(from / size), fc = from % size;
+  const tr = Math.floor(to / size), tc = to % size;
+  if (fr === tr || fc === tc) {
+    const step = fr === tr ? (fc < tc ? 1 : -1) : (fr < tr ? size : -size);
+    const val = board[from];
+    for (let i = from; i !== to; i += step) board[i] = board[i + step];
+    board[to] = val;
+    blank = from;
+    return true;
+  }
+  return false;
+}
+
+container.addEventListener('dragstart', e => {
+  if (!e.target.classList.contains('blank')) {
+    e.target.classList.add('selected');
+    e.dataTransfer.setData('text/plain', e.target.dataset.index);
+  }
+});
+container.addEventListener('dragend', e => e.target.classList.remove('selected'));
+container.addEventListener('dragover', e => e.preventDefault());
+container.addEventListener('drop', e => {
+  e.preventDefault();
+  const from = +e.dataTransfer.getData('text/plain');
+  const to = +container.querySelector('.tile.blank').dataset.index;
+  if (lineMove(from, to)) {
+    render();
+    if (board.every((v, i) => v === i))
+      setTimeout(() => alert('Congratulations! Puzzle solved.'), 100);
+  }
+});
+
+shuffleBtn.addEventListener('click', shuffle);
+shuffle();
+
+  </script>
+</body>
+<!--codedby:@progmahdi-->
